@@ -24,6 +24,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import random
 
+from pandas import DataFrame
+from pandas import concat
+
 import tensorflow as tf
 import shutil
 import tensorflow.contrib.learn as tflearn
@@ -48,10 +51,10 @@ trainOn = False
 filePath = "C:/"
 
 
-history1=algo.getpast.getpast("EUR_USD","H4")
+history1=algo.getpast.getpast("EUR_GBP","H4")
 
 
-history3=algo.getpast.getpast("GBP_AUD","H4")
+history3=algo.getpast.getpast("CHF_HKD","H4")
 
 #output = SMA(history1[0,:], timeperiod=25)
 
@@ -71,9 +74,13 @@ sma10 = talib.abstract.SMA(inputs, timeperiod=10)
 sma50 = talib.abstract.SMA(inputs, timeperiod=50)
 
 sma200 = talib.abstract.SMA(inputs, timeperiod=200)
-
 adx = talib.abstract.ADX(inputs)
+PLUS_DI =talib.abstract.PLUS_DI(inputs)
+MINUS_DI =talib.abstract.MINUS_DI(inputs)
+MACD = talib.abstract.MACD(inputs)
+OBV = talib.abstract.OBV(inputs)
 RSI = talib.abstract.RSI(inputs)
+Bol=talib.abstract.BBANDS(inputs)
 
 
 
@@ -102,31 +109,40 @@ RSI_2 = talib.abstract.RSI(inputs1)
 
 history2=history1
 
-history1=history2[201:,0]/np.amax(history2[:,3])
-history1 = np.vstack((history1,history2[201:,1]/np.amax(history2[:,3])))
-history1 = np.vstack((history1,history2[201:,2]/np.amax(history2[:,3])))
-history1 = np.vstack((history1,history2[201:,3]/np.amax(history2[:,3])))
-history1 = np.vstack((history1,history2[201:,4]/np.amax(history2[:,4])))
-history1 = np.vstack((history1,sma5[201:]/np.amax(history2[:,3])))
-history1 = np.vstack((history1,sma10[201:]/np.amax(history2[:,3])))
-history1 = np.vstack((history1,sma50[201:]/np.amax(history2[:,3])))
-history1 = np.vstack((history1,sma200[201:]/np.amax(history2[:,3])))
+#
+#(history2[201:,1]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))
+#
+#(sma5[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))
 
+history1=(history2[201:,0]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))
+history1 = np.vstack((history1,(history2[201:,1]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(history2[201:,2]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(history2[201:,3]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(history2[201:,4]-np.amin(history2[:,4]))/(np.amax(history2[:,4])-np.amin(history2[:,4]))))
+history1 = np.vstack((history1,(sma5[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(sma10[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(sma50[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(sma200[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
 history1 = np.vstack((history1,adx[201:]/100))
 history1 = np.vstack((history1,RSI[201:]/100))
+history1 = np.vstack((history1,PLUS_DI[201:]/100))
+history1 = np.vstack((history1,MINUS_DI[201:]/100))
+history1 = np.vstack((history1,(Bol[0][201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(Bol[1][201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
+history1 = np.vstack((history1,(Bol[2][201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
 
-history1 = np.vstack((history1,history3[201:,0]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,history3[201:,1]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,history3[201:,2]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,history3[201:,3]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,history3[201:,4]/np.amax(history3[:,4])))
-history1 = np.vstack((history1,sma5_2[201:]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,sma10_2[201:]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,sma50_2[201:]/np.amax(history3[:,3])))
-history1 = np.vstack((history1,sma200_2[201:]/np.amax(history3[:,3])))
-
-history1 = np.vstack((history1,adx_2[201:]/100))
-history1 = np.vstack((history1,RSI_2[201:]/100))
+#history1 = np.vstack((history1,(history3[201:,0]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(history3[201:,1]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(history3[201:,2]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(history3[201:,3]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(history3[201:,4]-np.amin(history3[:,4]))/(np.amax(history3[:,4])-np.amin(history3[:,4]))))
+#history1 = np.vstack((history1,(sma5_2[201:]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(sma10_2[201:]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(sma50_2[201:]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#history1 = np.vstack((history1,(sma200_2[201:]-np.amin(history3[:,3]))/(np.amax(history3[:,3])-np.amin(history3[:,3]))))
+#
+#history1 = np.vstack((history1,adx_2[201:]/100))
+#history1 = np.vstack((history1,RSI_2[201:]/100))
 
 
 
@@ -143,17 +159,17 @@ TS=history1
 #df=df.values
 #TS = np.array(df)
 
-num_periods = 200    #number of periods per vector we are using to predict one period ahead
-num_periods_test = 200
-inputs = 22         #number of vectors submittedxxx
-hidden = 50          #number of neurons we will recursively work through, can be changed to improve accuracy
+num_periods = 500    #number of periods per vector we are using to predict one period ahead
+num_periods_test = 500
+inputs = 16         #number of vectors submittedxxx
+hidden = 100         #number of neurons we will recursively work through, can be changed to improve accuracy
 output = 1            #number of output vectors
-f_horizon = 1  #forecast horizon, one period into the future
-learning_rate = 0.001   #small learning rate so we don't overshoot the minimum
+f_horizon = 1 #forecast horizon, one period into the future
+learning_rate = 0.005   #small learning rate so we don't overshoot the minimum
 #tf.layers
-epochs = 5000     #number of iterations or training cycles, includes both the FeedFoward and Backpropogation
-outputcolumn = 3
-layers_stacked_count = 2
+epochs = 3000     #number of iterations or training cycles, includes both the FeedFoward and Backpropogation
+outputcolumn = 5
+layers_stacked_count = 1
 #len(history[:,3])/num_periods
 
 #TS = history[:,[0,1,2,3]]/np.amax(history[:,3])
@@ -184,23 +200,33 @@ layers_stacked_count = 2
 #TS = np.array(ts)
 
 
-#x_data = TS[:(len(TS)-((len(TS)-num_periods_test) % num_periods))]
-
-#
-#x_data = TS[((len(TS)-num_periods_test-f_horizon) % num_periods):len(TS)-num_periods_test-f_horizon]
-#
-#x_batches = x_data.reshape(-1, num_periods, inputs)
-#
-#y_data = TS[((len(TS)-num_periods_test) % num_periods):len(TS)-num_periods_test,outputcolumn]
-#y_batches = y_data.reshape(-1, num_periods, 1)
+x_data = TS[:(len(TS)-((len(TS)-num_periods_test) % num_periods))]
 
 
-x_data = TS[((len(TS)-f_horizon) % num_periods):len(TS)-f_horizon]
+x_data = TS[((len(TS)-num_periods_test-f_horizon) % num_periods):len(TS)-num_periods_test-f_horizon]
 
 x_batches = x_data.reshape(-1, num_periods, inputs)
 
-y_data = TS[((len(TS)) % num_periods):len(TS)-num_periods_test,outputcolumn]
+y_data = TS[((len(TS)-num_periods_test) % num_periods):len(TS)-num_periods_test,outputcolumn]
 y_batches = y_data.reshape(-1, num_periods, 1)
+
+
+#x_data = TS[((len(TS)-f_horizon) % num_periods):len(TS)-f_horizon]
+#
+#x_batches = x_data.reshape(-1, num_periods, inputs)
+#
+#y_data = TS[((len(TS)) % num_periods):len(TS)-num_periods_test,outputcolumn]
+#y_batches = y_data.reshape(-1, num_periods, 1)
+#
+
+#
+#x_data = TS[((len(TS)-f_horizon) % num_periods):len(TS)-f_horizon]
+#
+#x_batches = x_data.reshape(-1, num_periods, inputs)
+#
+#y_data = TS[((len(TS)) % num_periods):len(TS)-num_periods_test,outputcolumn]
+#y_batches = y_data.reshape(-1, num_periods, 1)
+#
 
 
 
@@ -248,16 +274,19 @@ y = tf.placeholder(tf.float32, [None, num_periods, output])
 
 #basic_cell=[basic_cell1,basic_cell2, basic_cell3]
 
-
+keep_prob=0.8
 basic_cell = []
-for i in range(layers_stacked_count):
-    with tf.variable_scope('RNN_{}'.format(i)):
-#        basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.relu))
-#        basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh))
-        basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))
-            
-            
-            
+#for i in range(layers_stacked_count):
+#    with tf.variable_scope('RNN_{}'.format(i)):
+###        basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.relu))
+###        basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh))
+###        LSTMcell=tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh)
+#        basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))    
+###        basic_cell.append(tf.contrib.rnn.DropoutWrapper(LSTMcell,input_keep_prob=keep_prob, output_keep_prob=keep_prob))           
+#
+##basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.sigmoid))    
+
+basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.relu))       
 basic_cell = tf.nn.rnn_cell.MultiRNNCell(basic_cell, state_is_tuple=True)
 
 
@@ -284,25 +313,57 @@ with tf.Session() as sess:
     init.run()
     for ep in range(epochs):
         sess.run(training_op, feed_dict={X: x_batches, y: y_batches})
-        if ep % 500 == 0:
+        if ep % 100 == 0:
             mse = loss.eval(feed_dict={X: x_batches, y: y_batches})
-            print(ep, "\tMSE:", mse)
-            y_pred = sess.run(outputs, feed_dict={X: X_test})
             
-            a= np.sum(abs(y_pred-Y_test))
+#            print(ep, "Fit:", (mse/num_periods)*100)
+            b=(mse/num_periods)*100
+            training_y_pred = sess.run(outputs, feed_dict={X: x_batches})
+            
+            y_pred = sess.run(outputs, feed_dict={X: X_test})
+#            b =np.sum(abs(outputs-y_batches))
+            a= ((np.sum((abs(y_pred-Y_test))))/num_periods)*100
+            
+#            print(ep, "Fit:", b)
             print(ep, "Test:", a)
 #            y_pred = sess.run(outputs, feed_dict={Xtest: X_test})
 #            plt.figure(figsize=(10,5))
+##            plt.title("Forecast vs Actual", fontsize=14)
+##   
+#            plt.plot(pd.Series(b), "bo", markersize=10, label="Fit")
+###plt.plot(pd.Series(np.ravel(Y_test)), "w*", markersize=10)
+#            plt.plot(pd.Series(a), "r.", markersize=10, label="Test")
+##            plt.legend(loc="upper left")
+#            plt.xlabel("Time Periods")
+##
+#            plt.show()  
+#            plt.figure(figsize=(15,10))
+#            tt=y_batches[-1:,-num_periods_test:,0]
+#
+#            tt1=training_y_pred[-1:,-num_periods_test:,0]
+#            plt.subplot(211)
+#
 #            plt.title("Forecast vs Actual", fontsize=14)
 #   
-#            plt.plot(pd.Series(np.ravel(Y_test)), "bo", markersize=10, label="Actual")
+#            plt.plot(pd.Series(np.ravel(tt)), "bo", markersize=5, label="Actual")
+#            plt.plot(pd.Series(np.ravel(tt1)), "r.", markersize=5, label="Forecast")
 ##plt.plot(pd.Series(np.ravel(Y_test)), "w*", markersize=10)
-#            plt.plot(pd.Series(np.ravel(y_pred)), "r.", markersize=10, label="Forecast")
+#            plt.subplot(212)
+#            tt=Y_test[-1:,-num_periods_test:,0]
+#
+#            tt1=y_pred[-1:,-num_periods_test:,0]           
+#            plt.plot(pd.Series(np.ravel(tt)), "bo", markersize=5, label="Actual")
+#            plt.plot(pd.Series(np.ravel(tt1)), "r.", markersize=5, label="Forecast")            
+#            
+#
 #            plt.legend(loc="upper left")
 #            plt.xlabel("Time Periods")
+#            
+#            
+#            
+#
 #
 #            plt.show()  
-    
     
     
     y_pred = sess.run(outputs, feed_dict={X: X_test})
@@ -313,11 +374,10 @@ with tf.Session() as sess:
 a= np.sum(abs(y_pred-Y_test))
 
 
+#y_pred = sess.run(outputs, feed_dict={X: X_test})
+tt=Y_test[0,-num_periods:,0]
 
-tt=Y_test[0,-30:,0]
-
-tt1=y_pred[0,-30:,0]
-
+tt1=y_pred[0,-num_periods:,0]
 
 
 
