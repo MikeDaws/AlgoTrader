@@ -160,19 +160,24 @@ def getpast(a,b):
     print("Granularity: {}".format(response.get("granularity", 200)))
 #
 #    printer = CandlePrinter()
+
 #
 #    printer.print_header()
 
     candles = response.get("candles", 200)
 #    A = np.ndarray(shape=(1,4), dtype=float)
 #    A = np.zeros((1,4)
-    A = np.zeros( (5000, 5) )
+    A = np.zeros( (5000, 6) )
     for ii in range(0,5000):
         A[ii,0] = candles[ii].mid.o
         A[ii,1] = candles[ii].mid.h
         A[ii,2] = candles[ii].mid.l
         A[ii,3] = candles[ii].mid.c
         A[ii,4] = candles[ii].volume
+        
+        tempstore=datetime.strptime(candles[ii].time,"%Y-%m-%dT%H:%M:%S.000000000Z")
+        
+        A[ii,5] = tempstore.hour
 #        printer.print_candle(candle)
     return A
 #
