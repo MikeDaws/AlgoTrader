@@ -50,24 +50,29 @@ loadPrev = True
 trainOn = False
 filePath = "C:/"
 
+#def normout(a):
+#    meancalc=np.nanmean(a)
+#    stdcalc=np.nanstd(a)
+#    normout=(a-meancalc)/stdcalc
+#    return normout
+
+
 def normout(a):
     meancalc=np.nanmean(a)
     stdcalc=np.nanstd(a)
-    normout=(a-meancalc)/stdcalc
+    normout=(np.tanh(((a-meancalc)/stdcalc)))
     return normout
 
 
-
-
-def tester(training_y_pred,history1,a):
+def tester(training_y_pred,history1,a,b,c):
     #a is the start index, b is the end
     
     buy=[]
     sell=[]
     trade=[]
     tags=[]
-    strong=4
-    weak=0.4
+    strong=b
+    weak=c
     trade.clear
     for ii in range(a,len(training_y_pred[0,:])-1):
         tags.append(np.sum(training_y_pred[0,ii]))
@@ -104,8 +109,8 @@ def tester(training_y_pred,history1,a):
 
 #history1=algo.getpast.getpast("EUR_GBP","H1")
 #history1=algo.getpast.getpast("EUR_USD","H1")
-history1=algo.getpast.getpast("GBP_USD","H1")
-
+#history1=algo.getpast.getpast("GBP_USD","H1")
+history1=algo.getpast.getpast("USD_JPY","H1")
 
 savedata=history1
 
@@ -196,21 +201,13 @@ for ii in range(starttraining,endtraining):
 ##(sma5[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))
 #
 
-mean1=np.nanmean(oneback)
-std1=np.nanstd(oneback)
-norm1=(oneback-mean1)/std1
 
-mean2=np.nanmean(twoback)
-std2=np.nanstd(twoback)
-norm2=(twoback-mean2)/std2
+norm1=normout(oneback)
+norm2=normout(twoback)
+norm3=normout(threeback)
+norm4=normout(fourback)
 
-mean3=np.nanmean(threeback)
-std3=np.nanstd(threeback)
-norm3=(threeback-mean3)/std3
 
-mean4=np.nanmean(fourback)
-std4=np.nanstd(fourback)
-norm4=(fourback-mean4)/std4
 
 history2=history1
 open1=normout(history2[:,1])
@@ -282,22 +279,10 @@ for ii in range(starttest,endtest):
 
 
 
-
-mean1=np.nanmean(oneback)
-std1=np.nanstd(oneback)
-norm1=(oneback-mean1)/std1
-
-mean2=np.nanmean(twoback)
-std2=np.nanstd(twoback)
-norm2=(twoback-mean2)/std2
-
-mean3=np.nanmean(threeback)
-std3=np.nanstd(threeback)
-norm3=(threeback-mean3)/std3
-
-mean4=np.nanmean(fourback)
-std4=np.nanstd(fourback)
-norm4=(fourback-mean4)/std4
+norm1=normout(oneback)
+norm2=normout(twoback)
+norm3=normout(threeback)
+norm4=normout(fourback)
 
 
 
@@ -384,9 +369,9 @@ inputs = 10         #number of vectors submittedxxx
 hidden = 100        #number of neurons we will recursively work through, can be changed to improve accuracy
 output = 4            #number of output vectors
 
-learning_rate = 0.001    #small learning rate so we don't overshoot the minimum
+learning_rate = 0.005    #small learning rate so we don't overshoot the minimum
 #tf.layers
-epochs = 500    #number of iterations or training cycles, includes both the FeedFoward and Backpropogation
+epochs = 1000    #number of iterations or training cycles, includes both the FeedFoward and Backpropogation
 #outputcolumn = 4
 layers_stacked_count = 1
 ##len(history[:,3])/num_periods
@@ -557,6 +542,10 @@ init = tf.global_variables_initializer()           #initialize all the variables
 saver = tf.train.Saver()
 
 c=[]
+testtotal=[]
+traintotal=[]
+onedayprof=[]
+it=[]
 with tf.Session() as sess:
     init.run()
     saver.restore(sess, "C:\\New folder\model.ckpt")
@@ -570,20 +559,24 @@ with tf.Session() as sess:
 #            print(ep, "Fit:", (mse/num_periods)*100)
             b=mse
             training_y_pred = sess.run(outputs, feed_dict={X: x_batches})
-            result_train, end, tags1 = tester(training_y_pred,nonnormtraining,0)
+            result_train, end, tags1 = tester(training_y_pred,nonnormtraining,0,2,0)
             
-            training_y_pred = sess.run(outputs, feed_dict={X: x_batches_test})
-            result_test, endtest, tags2 = tester(training_y_pred,nonnormtest,0)  
+            training_y_pred1 = sess.run(outputs, feed_dict={X: x_batches_test})
+            result_test, endtest, tags2 = tester(training_y_pred1,nonnormtest,0,2,0)  
             aaa=training_y_pred[0,-24:]
             bbb=y_batches_test[0,-24:]
             b1= ((np.sum(((aaa-bbb)**2))))
             ccc=aaa-bbb
             b1 = loss.eval(feed_dict={X: x_batches_test, y: y_batches_test})
-            result_test_oneweek, tradeend, tags3 = tester(training_y_pred,nonnormtest,len(training_y_pred[0,:])-1-24)
+            result_test_oneweek, tradeend, tags3 = tester(training_y_pred1,nonnormtest,len(training_y_pred[0,:])-1-24,2,0)
 #            y_pred = sess.run(outputs, feed_dict={X: X_test})
 #            b =np.sum(abs(outputs-y_batches))
 
             save_path = saver.save(sess, "C:\\New folder\model.ckpt")
+            testtotal.append(result_test)
+            traintotal.append(result_train)
+            onedayprof.append(result_test_oneweek)
+            it.append(ep)
             
             print(ep, "Train:", b)
             print(ep, "Test:", b1)
