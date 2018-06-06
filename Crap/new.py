@@ -50,61 +50,84 @@ loadPrev = True
 trainOn = False
 filePath = "C:/"
 
+#def normout(a):
+#    meancalc=np.nanmean(a)
+#    stdcalc=np.nanstd(a)
+#    normout=(a-meancalc)/stdcalc
+#    return normout
+
+
 def normout(a):
     meancalc=np.nanmean(a)
     stdcalc=np.nanstd(a)
-    normout=(a-meancalc)/stdcalc
+    normout=(np.tanh(((a-meancalc)/stdcalc)))
     return normout
 
 
-
-
-def tester(training_y_pred,history1,a):
+def tester(training_y_pred,history1,a,b,c):
     #a is the start index, b is the end
     
     buy=[]
     sell=[]
     trade=[]
     tags=[]
-    strong=4
-    weak=0.4
+    strong=b
+    weak=c
     trade.clear
     for ii in range(a,len(training_y_pred[0,:])-1):
-        tags.append(np.sum(training_y_pred[0,ii]))
-        if np.sum(training_y_pred[0,ii]) > strong: #strong buy signal
-            if (len(buy)==0 and len(sell)==0) :
-                buy.append(history1[ii,3]) #no trades open long currency
-            if (len(sell)>0):
-               trade.append(sell[0]-history1[ii,3])    #if short trade open, then close this
-               sell.clear
+#        tags.append(np.sum(training_y_pred[0,ii]))
+        
+        
         if np.sum(training_y_pred[0,ii]) > weak:   #weak sell signal
             if (len(sell)>0):
                trade.append(sell[0]-history1[ii,3])    #if short trade open, then close this
+               sell.clear        
+        
+        if np.sum(training_y_pred[0,ii]) > strong: #strong buy signal
+            if (len(sell)>0):
+               trade.append(sell[0]-history1[ii,3])    #if short trade open, then close this
                sell.clear
-               
-               
-        if np.sum(training_y_pred[0,ii]) < -strong:   #strong sell signal
-            
+
             if (len(buy)==0 and len(sell)==0) :
-                sell.append(history1[ii,3]) #no trades open short currency
-           
-            if (len(buy)>0):
-               trade.append(history1[ii,3]-buy[0])    #if long trade open, then close this
-               buy.clear
-               
+                buy.append(history1[ii,3]) #no trades open long currency
+
+     
+        
+        
         if np.sum(training_y_pred[0,ii]) < -weak:   #weak sell signal
             if (len(buy)>0):
                trade.append(history1[ii,3]-buy[0])    #if long trade open, then close this
                buy.clear
+                             
+               
+        if np.sum(training_y_pred[0,ii]) < -strong:   #strong sell signal
+            
+            if (len(buy)>0):
+               trade.append(history1[ii,3]-buy[0])    #if long trade open, then close this
+               buy.clear            
+            
+            
+            if (len(buy)==0 and len(sell)==0) :
+                sell.append(history1[ii,3]) #no trades open short currency
+           
+
+
+
+    diff=[]
+#    for ii in range(a,len(training_y_pred[0,:])-2):
+#        diff.append(training_y_pred[0,ii]-history1[ii+1,3])
+
        
-    result=np.sum(trade)*10000*0.07
-    return result,trade,tags
+    result=np.sum(trade)*10000
+    return result,trade,diff
 
 
 
 #history1=algo.getpast.getpast("EUR_GBP","H1")
 #history1=algo.getpast.getpast("EUR_USD","H1")
 history1=algo.getpast.getpast("GBP_USD","H1")
+#history1=algo.getpast.getpast("USD_JPY","H1")
+#history1=algo.getpast.getpast("USD_CAD","H1")
 
 
 savedata=history1
@@ -127,7 +150,8 @@ sma50 = talib.abstract.SMA(inputs, timeperiod=50)
 sma200 = talib.abstract.SMA(inputs, timeperiod=200)
 #a=0
 
-
+adx = talib.abstract.ADX(inputs)
+RSI = talib.abstract.RSI(inputs)
 
 
 
@@ -150,6 +174,8 @@ history1 = np.vstack((history1,sma50))
 history1 = np.vstack((history1,sma200))
 history1 = np.vstack((history1,savedata[:,4]))
 history1 = np.vstack((history1,savedata[:,5]))
+history1 = np.vstack((history1,adx))
+history1 = np.vstack((history1,RSI))
 history1 = np.transpose(history1)
 
 
@@ -196,35 +222,28 @@ for ii in range(starttraining,endtraining):
 ##(sma5[201:]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))
 #
 
-mean1=np.nanmean(oneback)
-std1=np.nanstd(oneback)
-norm1=(oneback-mean1)/std1
 
-mean2=np.nanmean(twoback)
-std2=np.nanstd(twoback)
-norm2=(twoback-mean2)/std2
+norm1=normout(oneback)
+norm2=normout(twoback)
+norm3=normout(threeback)
+norm4=normout(fourback)
 
-mean3=np.nanmean(threeback)
-std3=np.nanstd(threeback)
-norm3=(threeback-mean3)/std3
 
-mean4=np.nanmean(fourback)
-std4=np.nanstd(fourback)
-norm4=(fourback-mean4)/std4
 
 history2=history1
-open1=normout(history2[:,1])
-close1=normout(history2[:,0])
-high1=normout(history2[:,2])
-low1=normout(history2[:,3])
+close1=normout(history2[:,0]-history2[:,1])
+open1=normout(history2[:,1]-history2[:,2])
+high1=normout(history2[:,2]-history2[:,3])
+low1=normout(history2[:,0]-history2[:,3])
 volume=normout(history2[:,4])
 time = (history1[:,5]-11.5)/12
-
+rsi1=normout(history2[:,6])
+adx1=normout(history2[:,7])
 
 
 #construct training set
-history1=open1[starttraining:endtraining]
-history1 = np.vstack((history1,close1[starttraining:endtraining]))
+history1=close1[starttraining:endtraining]
+history1 = np.vstack((history1,open1[starttraining:endtraining]))
 history1 = np.vstack((history1,high1[starttraining:endtraining]))
 history1 = np.vstack((history1,low1[starttraining:endtraining]))
 history1 = np.vstack((history1,volume[starttraining:endtraining]))
@@ -233,21 +252,23 @@ history1 = np.vstack((history1,norm1))
 history1 = np.vstack((history1,norm2))
 history1 = np.vstack((history1,norm3))
 history1 = np.vstack((history1,norm4))
-
-
+#history1 = np.vstack((history1,adx1[starttraining:endtraining]))
+history1 = np.vstack((history1,rsi1[starttraining:endtraining]))
 
 history1 = np.transpose(history1)
 TS=history1
 
-
+target1=[]
+#norm = normout(f1)
+#target1 = norm
+#norm = normout(f2)
+#target1 = norm
+#target1 = np.vstack((target1,norm))
+#norm = normout(f3)
+#target1 = np.vstack((target1,norm))
 norm = normout(f1)
 target1 = norm
-norm = normout(f2)
-target1 = np.vstack((target1,norm))
-norm = normout(f3)
-target1 = np.vstack((target1,norm))
-norm = normout(f4)
-target1 = np.vstack((target1,norm))
+#target1 = np.vstack((target1,norm))
 target1 = np.transpose(target1)
 
 
@@ -281,29 +302,25 @@ for ii in range(starttest,endtest):
     
 
 
+close1=normout(history2[:,0]-history2[:,1])
+open1=normout(history2[:,1]-history2[:,2])
+high1=normout(history2[:,2]-history2[:,3])
+low1=normout(history2[:,0]-history2[:,3])
+volume=normout(history2[:,4])
+time = (history1[:,5]-11.5)/12
+rsi1=normout(history2[:,6])
+adx1=normout(history2[:,7])
 
-
-mean1=np.nanmean(oneback)
-std1=np.nanstd(oneback)
-norm1=(oneback-mean1)/std1
-
-mean2=np.nanmean(twoback)
-std2=np.nanstd(twoback)
-norm2=(twoback-mean2)/std2
-
-mean3=np.nanmean(threeback)
-std3=np.nanstd(threeback)
-norm3=(threeback-mean3)/std3
-
-mean4=np.nanmean(fourback)
-std4=np.nanstd(fourback)
-norm4=(fourback-mean4)/std4
+norm1=normout(oneback)
+norm2=normout(twoback)
+norm3=normout(threeback)
+norm4=normout(fourback)
 
 
 
 historytest=[]
-historytest=open1[starttest:endtest]
-historytest = np.vstack((historytest,close1[starttest:endtest]))
+historytest=close1[starttest:endtest]
+historytest = np.vstack((historytest,open1[starttest:endtest]))
 historytest = np.vstack((historytest,high1[starttest:endtest]))
 historytest = np.vstack((historytest,low1[starttest:endtest]))
 historytest = np.vstack((historytest,volume[starttest:endtest]))
@@ -312,21 +329,34 @@ historytest = np.vstack((historytest,norm1))
 historytest = np.vstack((historytest,norm2))
 historytest = np.vstack((historytest,norm3))
 historytest = np.vstack((historytest,norm4))
-
+historytest = np.vstack((historytest,rsi1[starttest:endtest]))
+#historytest = np.vstack((historytest,adx1[starttest:endtest]))
 
 
 historytest = np.transpose(historytest)
 TStest=historytest
 
+#norm = normout(f1)
+#targettest = norm
+#norm = normout(f2)
+#targettest = np.vstack((targettest,norm))
+#norm = normout(f3)
+#targettest = np.vstack((targettest,norm))
+#norm = normout(f4)
+#targettest = np.vstack((targettest,norm))
+#targettest = np.transpose(targettest)
+
+targettest=[]
+#
+#norm = normout(f2)
+#targettest = norm
+#norm = normout(f3)
+#targettest = np.vstack((targettest,norm))
 norm = normout(f1)
 targettest = norm
-norm = normout(f2)
-targettest = np.vstack((targettest,norm))
-norm = normout(f3)
-targettest = np.vstack((targettest,norm))
-norm = normout(f4)
-targettest = np.vstack((targettest,norm))
+#targettest = np.vstack((targettest,norm))
 targettest = np.transpose(targettest)
+
 
 history1=history3
 #history1 = np.vstack((history1,(history2[201:,2]-np.amin(history2[:,3]))/(np.amax(history2[:,3])-np.amin(history2[:,3]))))
@@ -380,13 +410,13 @@ history1=history3
 #f_horizon = 1 #forecast horizon, one period into the future
 num_periods = TS.shape[0]     #number of periods per vector we are using to predict one period ahead
 #num_periods_test = history1.shape[0]-f_horizon 
-inputs = 10         #number of vectors submittedxxx
+inputs = 11         #number of vectors submittedxxx
 hidden = 100        #number of neurons we will recursively work through, can be changed to improve accuracy
-output = 4            #number of output vectors
+output = 1            #number of output vectors
 
-learning_rate = 0.001    #small learning rate so we don't overshoot the minimum
+learning_rate = 0.005    #small learning rate so we don't overshoot the minimum
 #tf.layers
-epochs = 500    #number of iterations or training cycles, includes both the FeedFoward and Backpropogation
+epochs = 1000    #number of iterations or training cycles, includes both the FeedFoward and Backpropogation
 #outputcolumn = 4
 layers_stacked_count = 1
 ##len(history[:,3])/num_periods
@@ -506,7 +536,7 @@ basic_cell = []
 #for i in range(layers_stacked_count):
 #    with tf.variable_scope('RNN_{}'.format(i)):
 ###        basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.relu))
-###        basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh))
+
 #        LSTMcell=tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh)
 #        basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))    
 #
@@ -517,11 +547,11 @@ basic_cell = []
 #basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
 
 #LSTMcell=tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh)
-
+basic_cell.append(tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh))
 #basic_cell.append(tf.contrib.rnn.DropoutWrapper(LSTMcell,input_keep_prob=keep_prob, output_keep_prob=keep_prob))           
-basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
-basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
-basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
+#basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
+#basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
+#basic_cell.append(tf.nn.rnn_cell.BasicLSTMCell(num_units=hidden, activation=tf.nn.tanh))       
 
 
 #basic_cell.append(tf.contrib.rnn.DropoutWrapper(LSTMcell,input_keep_prob=keep_prob, output_keep_prob=keep_prob))       
@@ -557,12 +587,16 @@ init = tf.global_variables_initializer()           #initialize all the variables
 saver = tf.train.Saver()
 
 c=[]
+testtotal=[]
+traintotal=[]
+onedayprof=[]
+it=[]
 with tf.Session() as sess:
     init.run()
     saver.restore(sess, "C:\\New folder\model.ckpt")
     for ep in range(epochs):
         sess.run(training_op, feed_dict={X: x_batches, y: y_batches})
-        mse = loss.eval(feed_dict={X: x_batches, y: y_batches})
+        mse = loss.eval(feed_dict={X: x_batches, y: y_batches})/num_periods
         c.append(mse)
 
         if ep % 10 == 0:
@@ -570,28 +604,45 @@ with tf.Session() as sess:
 #            print(ep, "Fit:", (mse/num_periods)*100)
             b=mse
             training_y_pred = sess.run(outputs, feed_dict={X: x_batches})
-            result_train, end, tags1 = tester(training_y_pred,nonnormtraining,0)
+            result_train, end, tags1 = tester(training_y_pred,nonnormtraining,0,0.5,0)
             
-            training_y_pred = sess.run(outputs, feed_dict={X: x_batches_test})
-            result_test, endtest, tags2 = tester(training_y_pred,nonnormtest,0)  
-            aaa=training_y_pred[0,-24:]
-            bbb=y_batches_test[0,-24:]
-            b1= ((np.sum(((aaa-bbb)**2))))
-            ccc=aaa-bbb
-            b1 = loss.eval(feed_dict={X: x_batches_test, y: y_batches_test})
-            result_test_oneweek, tradeend, tags3 = tester(training_y_pred,nonnormtest,len(training_y_pred[0,:])-1-24)
+            training_y_pred1 = sess.run(outputs, feed_dict={X: x_batches_test})
+            result_test, endtest, tags2 = tester(training_y_pred1,nonnormtest,0,0.5,0)  
+##            aaa=training_y_pred[0,-24:]
+##            bbb=y_batches_test[0,-24:]
+##            b1= ((np.sum(((aaa-bbb)**2))))
+##            ccc=aaa-bbb
+#            b1 = loss.eval(feed_dict={X: x_batches_test, y: y_batches_test})
+            result_test_oneweek, tradeend, tags3 = tester(training_y_pred1,nonnormtest,len(training_y_pred[0,:])-24,0.5,0)
 #            y_pred = sess.run(outputs, feed_dict={X: X_test})
 #            b =np.sum(abs(outputs-y_batches))
 
             save_path = saver.save(sess, "C:\\New folder\model.ckpt")
+            testtotal.append(result_test)
+            traintotal.append(result_train)
+#            onedayprof.append(result_test_oneweek)
+            it.append(ep)
             
-            print(ep, "Train:", b)
-            print(ep, "Test:", b1)
+            
+            ddd=training_y_pred[0,:,0]-y_data[:]       
+            b1= ((np.sum(((training_y_pred[0,:,0]-y_data[:])**2))))/num_periods 
+            b2= ((np.sum(((training_y_pred1[0,-24:,0]-y_test[-24:])**2))))/24 
+            
+            print(ep, "Train:", b1)
+            print(ep, "Test:", b2)
             print(ep, "Trainprofit", result_train)
-            print(ep, "Testnprofit", result_test)
+#            print(ep, "Testnprofit", result_test)
             print(ep, "oneweek", result_test_oneweek)
 
             print(ep, "")
+            
+#            ddd=y_test-training_y_pred1[0]
+
+#plt.plot(aaa)
+            plt.plot(training_y_pred1[0,-24:,0]-y_test[-24:])
+#ddd=training_y_pred-training_y_pred1
+#plt.plot(tags4)
+            plt.show()
 ##            y_pred = sess.run(outputs, feed_dict={Xtest: X_test})
 #            plt.figure(figsize=(10,5))
 #            plt.title("Forecast vs Actual", fontsize=14)

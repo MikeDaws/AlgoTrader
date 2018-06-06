@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 17 12:35:05 2018
+
+@author: Mikw
+"""
+
 #!/usr/bin/env python
 
 import argparse
@@ -7,39 +14,40 @@ from datetime import datetime#
 import numpy as np
 import array
 
-def getpast(a,b):
-    """
-    Create an API context, and use it to fetch candles for an instrument.
+a="EUR_USD"
+b="H4"
+"""
+Create an API context, and use it to fetch candles for an instrument.
 
-    The configuration for the context is parsed from the config file provided
-    as an argumentV
-    """
+The configuration for the context is parsed from the config file provided
+as an argumentV
+"""
 
-    parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 
-    #
-    # The config object is initialized by the argument parser, and contains
-    # the REST APID host, port, accountID, etc.
-    #
-    common.config.add_argument(parser)
-
-
-
+#
+# The config object is initialized by the argument parser, and contains
+# the REST APID host, port, accountID, etc.
+#
+common.config.add_argument(parser)
 
 
 
-    """
-    Get the prices for a list of Instruments for the active Account.
-    Repeatedly poll for newer prices if requested.
-    """
 
-    parser = argparse.ArgumentParser()
 
-    common.config.add_argument(parser)
-    args = parser.parse_args()
-    account_id = args.config.active_account
-    
-    api = args.config.create_context()
+
+"""
+Get the prices for a list of Instruments for the active Account.
+Repeatedly poll for newer prices if requested.
+"""
+
+parser = argparse.ArgumentParser()
+
+common.config.add_argument(parser)
+args = parser.parse_args()
+account_id = args.config.active_account
+
+api = args.config.create_context()
 
 
 
@@ -117,22 +125,22 @@ def getpast(a,b):
 #        help="The timezone to used for aligning daily candles"
 #    )
 
-    args = parser.parse_args()
+args = parser.parse_args()
 
-    account_id = args.config.active_account
+account_id = args.config.active_account
 
-    #
-    # The v20 config object creates the v20.Context for us based on the
-    # contents of the config file.
-    #
-    api = args.config.create_context()
+#
+# The v20 config object creates the v20.Context for us based on the
+# contents of the config file.
+#
+api = args.config.create_context()
 
-    kwargs = {}
+kwargs = {}
 
-    kwargs["granularity"] = b
+kwargs["granularity"] = b
 
-    
-    kwargs["count"] = 5000
+
+kwargs["count"] = 5000
 #
 #    
 #    price = "mid"
@@ -149,38 +157,37 @@ def getpast(a,b):
 #        kwargs["price"] = "A" + kwargs.get("price", "")
 #        price = "ask"
 
-    #
-    # Fetch the candles
-    #
-    response = api.instrument.candles(a, **kwargs)
+#
+# Fetch the candles
+#
+response = api.instrument.candles(a, **kwargs)
 
    
 
-    print("Instrument: {}".format(response.get("instrument", 200)))
-    print("Granularity: {}".format(response.get("granularity", 200)))
+print("Instrument: {}".format(response.get("instrument", 200)))
+print("Granularity: {}".format(response.get("granularity", 200)))
 #
 #    printer = CandlePrinter()
 
 #
 #    printer.print_header()
 
-    candles = response.get("candles", 200)
+candles = response.get("candles", 200)
 #    A = np.ndarray(shape=(1,4), dtype=float)
 #    A = np.zeros((1,4)
-    A = np.zeros( (5000, 6) )
-    B = []
-    for ii in range(0,5000):
-        A[ii,0] = candles[ii].mid.o
-        A[ii,1] = candles[ii].mid.h
-        A[ii,2] = candles[ii].mid.l
-        A[ii,3] = candles[ii].mid.c
-        A[ii,4] = candles[ii].volume
-        
-        tempstore=datetime.strptime(candles[ii].time,"%Y-%m-%dT%H:%M:%S.000000000Z")
-        A[ii,5] = tempstore.hour
+A = np.zeros( (5000, 6) )
+B = []
+for ii in range(0,5000):
+    A[ii,0] = candles[ii].mid.o
+    A[ii,1] = candles[ii].mid.h
+    A[ii,2] = candles[ii].mid.l
+    A[ii,3] = candles[ii].mid.c
+    A[ii,4] = candles[ii].volume
+    
+    tempstore=datetime.strptime(candles[ii].time,"%Y-%m-%dT%H:%M:%S.000000000Z")
+    A[ii,5] = tempstore.hour
 #        printer.print_candle(candle)
-    return A
 #
 #if __name__ == "__main__":
 #    main()
-    
+
