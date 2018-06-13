@@ -66,11 +66,11 @@ kwargs1 = {}
 #    kwargs["units"]=10
 #    kwargs["type"]="MARKET"
 #kwargs["stopLoss"]=v20.transaction.StopLossDetails(**kwargs1)
-kwargs1["price"] = None
-#kwargs["takeProfit"]=v20.transaction.TakeProfitDetails(**kwargs1)
-kwargs1["distance"] = None
+#kwargs1["price"] = None
+kwargs["takeProfit"]=None
+#kwargs1["distance"] = None
 #kwargs["trailingStopLoss"]=v20.transaction.TrailingStopLossDetails(**kwargs1)    
-kwargs["trailingStopLoss"]=None
+#kwargs["trailingStopLoss"]=None
 #marketOrderArgs.parse_arguments(args)
 
-order=api.trade.set_dependent_orders(account_id,282,**kwargs)
+order=api.trade.set_dependent_orders(account_id,2656,**kwargs)

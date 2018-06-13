@@ -34,7 +34,7 @@ tf.__version__
 #from talib.abstract import *
 
 
-def notest(pairIn,predIn,A):
+def notest(pairIn,predIn,A,spread, hidden, layers_stacked_count, beta,stoploss,m):
     
     #Parameter list
     loadPrev = True
@@ -106,7 +106,7 @@ def notest(pairIn,predIn,A):
         
         return normInput
     
-    def inOut(inputs, starttraining,endtraining, currencyPairs,history1):
+    def inOut(inputs, starttraining,endtraining, currencyPairs,history1,spread,m):
         inputPre = inputs[starttraining:endtraining,:]
         
         normInput=[]
@@ -171,16 +171,15 @@ def notest(pairIn,predIn,A):
                 
                 
         for ii in range(starttraining,endtraining):
-            if inputs[ii+1,4]-inputs[ii,4]>stdcalc:
+            if inputs[ii+1,4]-inputs[ii,4]>m*spread:
                 tempOut.append(1)
                 tempOut.append(0)
                 tempOut.append(0)
-    
-            elif inputs[ii+1,4]-inputs[ii,4]<-stdcalc:
+        
+            elif inputs[ii+1,4]-inputs[ii,4]<-m*spread:
                 tempOut.append(0)
                 tempOut.append(1)
                 tempOut.append(0)
-    
             else:
                 tempOut.append(0)
                 tempOut.append(0)
@@ -213,8 +212,8 @@ def notest(pairIn,predIn,A):
     
     
     learning_rate=0.01
-    hidden=11
-    layers_stacked_count=1
+#    hidden=12
+#    layers_stacked_count=1
     predAverage=predIn
     if predIn>1:
         epochs=200
@@ -225,7 +224,7 @@ def notest(pairIn,predIn,A):
     starttraining=50
     output=3
     num_classes=3
-    beta=0
+    beta=0.001
     history1=[]
     inputs=[]
     history=[]
@@ -293,7 +292,7 @@ def notest(pairIn,predIn,A):
     cut =(endtraining-starttraining) % seqLength
     adjustedStart=starttraining+cut
     
-    normIn, normOut = inOut(inputs, adjustedStart, endtraining, len(history),targetHistory)    
+    normIn, normOut = inOut(inputs, adjustedStart, endtraining, len(history),targetHistory,spread,m)    
     x_batches_nonnorm = inputs[adjustedStart:endtraining,:].reshape(-1, seqLength, len(inputs[1]))
     x_batches = normIn.reshape(-1, seqLength, len(normIn[1]))
     y_batches = normOut.reshape(-1, seqLength, num_classes)
@@ -310,11 +309,13 @@ def notest(pairIn,predIn,A):
     keep_prob=1
     basic_cell = []
     for i in range(layers_stacked_count):
-        GruCell=tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh)
+    #    GruCell=tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh)
     #    dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)      
-    #    LSTMCell=tf.nn.rnn_cell.LSTMCell(num_units=hidden, activation=tf.nn.tanh)
-        dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)     
-    #    basic_cell.append(dropped)
+        LSTMCell=tf.nn.rnn_cell.LSTMCell(num_units=hidden, activation=tf.nn.tanh)
+    #    dropped=tf.contrib.cudnn_rnn.CudnnCompatibleLSTMCell(LSTMCell)
+        dropped=tf.contrib.rnn.DropoutWrapper(LSTMCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)     
+    #    dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)
+    #    basic_cell.append(cudaLSTM)
         basic_cell.append(dropped)
     
              

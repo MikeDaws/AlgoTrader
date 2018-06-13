@@ -30,6 +30,9 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 import random
+import argparse
+import common.config
+import common.args
 
 from pandas import DataFrame
 from pandas import concat
@@ -41,6 +44,9 @@ import tensorflow.contrib.layers as tflayers
 from tensorflow.contrib.learn.python.learn import learn_runner
 import tensorflow.contrib.metrics as metrics
 import tensorflow.contrib.rnn as rnn
+from account.account import Account
+from order.args import OrderArguments
+
 #Main File for doing shit
 #import panda
 import talib
@@ -49,6 +55,7 @@ import algo.getpast
 import common.config
 import common.args
 import datetime
+import getFullpast
 tf.__version__
 #from talib.abstract import *
 
@@ -58,15 +65,24 @@ trainOn = False
 filePath = "C:/"
 
 
+  
 def normout(a):
     meancalc=np.nanmean(a)
     stdcalc=np.nanstd(a)
     normout=(np.tanh(((a-meancalc)/stdcalc)))
     return normout
 
-def timeout(a):
-    time = (a-11.5)/12
+#def timeout(a):
+#    time = (a-11.5)/12
+#    return time
+def timeout1(a):
+    time = np.sin(2*np.pi*a/1440)
     return time
+
+def timeout2(a):
+    time = np.cos(2*np.pi*a/1440)
+    return time
+
 
 def hundred(a):
     time = (a-50)/100
@@ -89,7 +105,8 @@ def inOnly(inputs, starttraining,endtraining, currencyPairs):
         temp.append(normout(inputPre[:,loopNum*jj+1])) 
 #        temp.append(normout(inputPre[:,loopNum*jj+0:loopNum*jj+4]))
         temp.append(normout(inputPre[:,loopNum*jj+2]))
-        temp.append(timeout(inputPre[:,loopNum*jj+3]))
+        temp.append(timeout1(inputPre[:,loopNum*jj+3]))
+        temp.append(timeout2(inputPre[:,loopNum*jj+3]))
         temp.append(hundred(inputPre[:,loopNum*jj+4]))
         temp.append(hundred(inputPre[:,loopNum*jj+5]))
         temp.append(hundred(inputPre[:,loopNum*jj+6]))
@@ -127,7 +144,7 @@ def inOnly(inputs, starttraining,endtraining, currencyPairs):
     
     return normInput
 
-def inOut(inputs, starttraining,endtraining, currencyPairs,history1):
+def inOut(inputs, starttraining,endtraining, currencyPairs,history1,spread):
     inputPre = inputs[starttraining:endtraining,:]
     
     normInput=[]
@@ -139,7 +156,8 @@ def inOut(inputs, starttraining,endtraining, currencyPairs,history1):
         temp.append(normout(inputPre[:,loopNum*jj+1])) 
 #        temp.append(normout(inputPre[:,loopNum*jj+0:loopNum*jj+4]))
         temp.append(normout(inputPre[:,loopNum*jj+2]))
-        temp.append(timeout(inputPre[:,loopNum*jj+3]))
+        temp.append(timeout1(inputPre[:,loopNum*jj+3]))
+        temp.append(timeout2(inputPre[:,loopNum*jj+3]))
         temp.append(normout(inputPre[:,loopNum*jj+4]))
         temp.append(hundred(inputPre[:,loopNum*jj+5]))
         
@@ -192,16 +210,15 @@ def inOut(inputs, starttraining,endtraining, currencyPairs,history1):
             
             
     for ii in range(starttraining,endtraining):
-        if inputs[ii+1,4]-inputs[ii,4]>mean+0.5*stdcalc:
+        if inputs[ii+1,4]-inputs[ii,4]>2*spread:
             tempOut.append(1)
             tempOut.append(0)
             tempOut.append(0)
-
-        elif inputs[ii+1,4]-inputs[ii,4]<mean-0.5*stdcalc:
+    
+        elif inputs[ii+1,4]-inputs[ii,4]<-2*spread:
             tempOut.append(0)
             tempOut.append(1)
             tempOut.append(0)
-
         else:
             tempOut.append(0)
             tempOut.append(0)
@@ -233,24 +250,25 @@ def inOut(inputs, starttraining,endtraining, currencyPairs,history1):
 
 
 
-learning_rate=0.01
-hidden=11
+learning_rate=0.025
+hidden=6
 layers_stacked_count=1
 predAverage=2
-epochs=25000
-predicted=800
-seqLength = 800
+epochs=200
+predicted=100
+seqLength = 100
 starttraining=50
 output=3
 num_classes=3
-beta=0.005
+beta=0.000 
 history1=[]
 inputs=[]
+dataAmount=50000
 history=[]
-
+pair="EUR_GBP"
 #history.append(algo.getpast.getpast("GBP_USD","M15"))
 #history.append(algo.getpast.getpast("AUD_JPY","H1"))
-history.append(algo.getpast.getpast("EUR_GBP","M15"))
+history.append(getFullpast.getFullpast(pair,"M15",11))
 #history.append(algo.getpast.getpast("AUD_JPY","H1"))
 #history.append(algo.getpast.getpast("AUD_USD","H1"))
 #history.append(algo.getpast.getpast("USD_JPY","H4"))
@@ -271,6 +289,42 @@ history.append(algo.getpast.getpast("EUR_GBP","M15"))
 #history.append(algo.getpast.getpast("US30_USD","H4"))
 #history.append(algo.getpast.getpast("USD_JPY","H4"))
 #history1=algo.getpast.getpast("EUR_GBP","H1")/
+parser = argparse.ArgumentParser()
+
+common.config.add_argument(parser)
+args = parser.parse_args()
+account_id = args.config.active_account
+
+api = args.config.create_context()
+kwargs = {}
+
+
+response = api.account.get(account_id)
+ac=response.get("account", "200")
+account1 = Account(ac)
+#account1.dump()
+accountBalance=account1.details.balance
+tradeCount=account1.details.openTradeCount
+trades=account1.position_get(pair)
+#    sellTrades=trades.short.tradeIDs
+#    buyTrades=trades.long.tradeIDs
+
+#if trades.short.units<0 or trades.long.units>0:
+kwargs = {}
+kwargs["instruments"]=pair
+kwargs["since"]=None
+kwargs["includeUnitsAvailable"]="FALSE"
+kwargs["includeHomeConversions"]="TRUE"
+
+
+#kwargs["granularity"] = "M15"
+#kwargs["count"] = 1
+response = api.pricing.get(account_id,**kwargs)
+price=response.get("prices", 200)
+bid=price[0].bids[0].price
+ask=price[0].asks[0].price
+#spread=ask-bid
+#    spread=0.00015
 
 targetHistory=[]
 targetHistory.append(history[0])
@@ -316,6 +370,10 @@ for kk in range(0,len(history)):
     inputs.append(history1[:,1]-history1[:,0])
     inputs.append(history1[:,2]-history1[:,3])
     inputs.append(history1[:,2]-history1[:,0])
+    
+    upperMovement=history1[1:339998,1]-history1[0:339997,3]
+    lowerMovement=history1[1:339998,1]-history1[0:339997,3]
+    
 #    inputs.append(talib.abstract.MINUS_DI(priceinputs))
 #    inputs.append(talib.abstract.PLUS_DI(priceinputs))
 #    macd, macdsignal, macdhist = talib.abstract.MACD(priceinputs)
@@ -347,16 +405,24 @@ cut =(endtraining-starttraining) % seqLength
 adjustedStart=starttraining+cut
 starttest=endtest-(endtraining-adjustedStart)    
 
-normIn, normOut = inOut(inputs, adjustedStart, endtraining, len(history),targetHistory)    
+normIn, normOut = inOut(inputs, adjustedStart, endtraining, len(history),targetHistory,spread)    
 indicatorVal=len(inputs)-(endtraining-adjustedStart)
 normindVal = inOnly(inputs, indicatorVal, len(inputs), len(history))    
 x_batches_nonnorm = inputs[adjustedStart:endtraining,:].reshape(-1, seqLength, len(inputs[1]))
 #x_ind = normindVal.reshape(-1, seqLength, len(normIn[1]))
+
+normIn=normIn[-dataAmount:,:]
+normOut=normOut[-dataAmount:,:]
+historyUsed=history1[-dataAmount:,:]
+
 x_batches = normIn.reshape(-1, seqLength, len(normIn[1]))
 y_batches = normOut.reshape(-1, seqLength, num_classes)
+
+
+
 #x_batches_test = normInTest.reshape(-1, seqLength, len(normIn[1]))
 #y_batches_test = normOutTest.reshape(-1, seqLength, 1)
-
+testData=normOut[-100:,:]
 output=y_batches.shape[2]
 num_periods=y_batches.shape[1]
 tf.reset_default_graph()   #We didn't have any previous graph objects running, but this would reset the graphs
@@ -373,17 +439,20 @@ for i in range(layers_stacked_count):
 #    GruCell=tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh)
 #    dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)      
     LSTMCell=tf.nn.rnn_cell.LSTMCell(num_units=hidden, activation=tf.nn.tanh)
+#    dropped=tf.contrib.cudnn_rnn.CudnnCompatibleLSTMCell(LSTMCell)
     dropped=tf.contrib.rnn.DropoutWrapper(LSTMCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)     
-#    basic_cell.append(dropped)
+#    dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)
+#    basic_cell.append(cudaLSTM)
     basic_cell.append(dropped)
 
-         
+       
 
 basic_cell = tf.nn.rnn_cell.MultiRNNCell(basic_cell, state_is_tuple=True)
 
 
 
 rnn_output, states = tf.nn.dynamic_rnn(basic_cell, X, dtype=tf.float32)               #choose dynamic over static
+#rnn_output, states ==tf.contrib.cudnn_rnn.CudnnLSTM(num_layers=2,num_units=hidden)  
 
 stacked_rnn_output = tf.reshape(rnn_output, [-1, hidden])           #change the form into a tensor
 #dense = tf.layers.dense(stacked_rnn_output, 3, activation=tf.nn.softmax)
@@ -441,6 +510,7 @@ testtot=[]
 with tf.Session() as sess:
     init.run()
 #    saver.restore(sess, "C:\\New folder\model.ckpt")
+    
     for ep in range(epochs):
 #    ep=0
 #    while (tot/len(correct_pred)<0.99):
@@ -451,6 +521,7 @@ with tf.Session() as sess:
 #        print("Step " + str(ep) + ", Minibatch Loss= " + \
 #                  "{:.4f}".format(loss) + ", Training Accuracy= " + \
 #                  "{:.3f}".format(acc))
+            
         if ep % 10== 0:
             training_y_pred = sess.run(outputs, feed_dict={X: x_batches})
 #            print(ep, "Train (MAE):",mse)
@@ -469,7 +540,9 @@ with tf.Session() as sess:
 #            for ii in range(1,predicted+1):
 #            for ii in range(1,predicted+1):
             ii=seqLength
-            normInTest, normOutTest = inOut(inputs, adjustedStart, endtraining+ii, len(history),targetHistory) 
+            normInTest, normOutTest = inOut(inputs, adjustedStart, endtraining+ii, 1,targetHistory,spread) 
+            normInTest=normInTest[-dataAmount:,:]
+            normOutTest=normOutTest[-dataAmount:,:]
             x_batches_test = normInTest.reshape(-1, seqLength, len(normInTest[1]))
             y_batches_test = normOutTest.reshape(-1, seqLength, 1)
             training_y_pred1 = sess.run(outputs, feed_dict={X: x_batches_test})                
@@ -481,8 +554,8 @@ with tf.Session() as sess:
 #            testtot.append(correct_pred1[-1])
     #                print(ep, "Train (MAE):",tot/len(predicted))   
 
-
-
+            testPredLog=training_y_pred1[-100:,:]
+            testLog=normOutTest[-100:,:]
          
 #            testtot=np.array(testtot)
             testtotval = np.sum(correct_pred1)
@@ -490,7 +563,6 @@ with tf.Session() as sess:
             testlogger.append(testtotval/seqLength)
                        
             np.sum(normOutTest[:,2])/len(normOutTest[:,2])
-            plt.plot(traintotal, label="Train")
-            plt.plot(testlogger, label="Test")
-            plt.legend(loc="upper left")
-            plt.show()
+#            plt.plot(traintotal, label="Train")
+#            plt.plot(testlogger, label="Test")
+#            plt.legend(loc="upper left")

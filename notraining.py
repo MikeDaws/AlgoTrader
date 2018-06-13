@@ -30,11 +30,11 @@ import algo.getpast
 import common.config
 import common.args
 import datetime
-tf.__version__
+#tf.__version__
 #from talib.abstract import *
 
 
-def notraining(history,pairIn,predIn):
+def notraining(history,pairIn,predIn, hidden, layers_stacked_count, beta):
     
     #Parameter list
     loadPrev = True
@@ -204,8 +204,8 @@ def notraining(history,pairIn,predIn):
     
     
     learning_rate=0.01
-    hidden=11
-    layers_stacked_count=1
+#    hidden=12
+#    layers_stacked_count=1
     predAverage=predIn
     epochs=200
     predicted=0
@@ -213,7 +213,7 @@ def notraining(history,pairIn,predIn):
     starttraining=50
     output=3
     num_classes=3
-    beta=0
+#    beta=0
     history1=[]
     inputs=[]
 #    history=[]
@@ -298,11 +298,13 @@ def notraining(history,pairIn,predIn):
     keep_prob=1
     basic_cell = []
     for i in range(layers_stacked_count):
-        GruCell=tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh)
+    #    GruCell=tf.nn.rnn_cell.GRUCell(num_units=hidden, activation=tf.nn.tanh)
     #    dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)      
-    #    LSTMCell=tf.nn.rnn_cell.LSTMCell(num_units=hidden, activation=tf.nn.tanh)
-        dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)     
-    #    basic_cell.append(dropped)
+        LSTMCell=tf.nn.rnn_cell.LSTMCell(num_units=hidden, activation=tf.nn.tanh)
+    #    dropped=tf.contrib.cudnn_rnn.CudnnCompatibleLSTMCell(LSTMCell)
+        dropped=tf.contrib.rnn.DropoutWrapper(LSTMCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)     
+    #    dropped=tf.contrib.rnn.DropoutWrapper(GruCell,input_keep_prob=keep_prob, output_keep_prob=keep_prob)
+    #    basic_cell.append(cudaLSTM)
         basic_cell.append(dropped)
     
              

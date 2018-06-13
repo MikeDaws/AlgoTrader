@@ -50,7 +50,7 @@ from order.args import OrderArguments
 #def placeOrder(pair, signal):
 
 #Check if trade is already open for pai
-pair="AUD_JPY"
+pair="EUR_GBP"
 signal="sell"
 risk=0.01
 parser = argparse.ArgumentParser()
@@ -91,14 +91,14 @@ spread=ask-bid
 mid=(ask+bid)/2
 if signal=="buy":
     stoploss=bid-2*spread
-    takeProfit=bid+2*spread
-    potentialLoss=3*spread
+    takeProfit=bid+2.5*spread
+    potentialLoss=abs(stoploss-bid)
     sign=1
     convert=price[0].quoteHomeConversionFactors.positiveUnits
 elif signal=="sell":
     stoploss=ask+2*spread
-    takeProfit=ask-2*spread
-    potentialLoss=3*spread
+    takeProfit=ask-2.5*spread
+    potentialLoss=abs(stoploss-bid)
     sign=-1
     convert=price[0].quoteHomeConversionFactors.negativeUnits
 
@@ -108,27 +108,30 @@ elif signal=="sell":
 #    stoploss=round(stoploss,8)
 #    takeProfit=round(takeProfit,8)
 #    #   position size * change *conversion factor/traded currency = account balance * risk
-positionsize=((risk*accountBalance*convert)*mid)/(potentialLoss)
-              
+#change in value in gbp = unit size*0.0001*change in pips / currencyconvert
+
+positionsize=((risk*accountBalance*convert))/(potentialLoss)
+maxpositionsize=((account1.details.marginAvailable/account1.details.marginRate)/convert)/(potentialLoss)  
           
+positionsize=np.minimum(positionsize,maxpositionsize)
 positionsize=int(positionsize)
 #    kwargs = {}
-#    kwargs1 = {}
-#    kwargs1["price"] = stoploss
+kwargs1 = {}
+kwargs1["price"] = stoploss
 #    
 #    #self.parsed_args["stopLossOnFill"] = \
 #    #kwargs["id"] = 123456
-#    kwargs["instrument"]=pair
-#    kwargs["units"]=sign*positionsize
-#    kwargs["type"]="MARKET"
-#    kwargs["stopLossOnFill"]=v20.transaction.StopLossDetails(**kwargs1)
-#    kwargs1["price"] = takeProfit
-#    kwargs["takeProfitOnFill"]=v20.transaction.TakeProfitDetails(**kwargs1)
-#    
+kwargs["instrument"]=pair
+kwargs["units"]=sign*positionsize
+kwargs["type"]="MARKET"
+kwargs["stopLossOnFill"]=v20.transaction.StopLossDetails(**kwargs1)
+kwargs1["price"] = takeProfit
+kwargs["takeProfitOnFill"]=v20.transaction.TakeProfitDetails(**kwargs1)
+    
 #    
 #    #marketOrderArgs.parse_arguments(args)
 #    
-#    order=api.order.market(account_id,**kwargs)
+order=api.order.market(account_id,**kwargs)
 #    #order=api.order.MarketOrder(order)
 #    #print("Response: {} ({})".format(order.status, order.reason))
 #    #print("")re
