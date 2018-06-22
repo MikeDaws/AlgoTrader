@@ -49,10 +49,17 @@ def getSpread(pair):
     kwargs = {}
     
     
-    response = api.account.get(account_id)
+    
+    while True:
+        try:
+            response = api.account.get(account_id)
+            break
+        except:
+         time.sleep(2)
+         
     ac=response.get("account", "200")
     account1 = Account(ac)
-    account1.dump()
+#    account1.dump()
 
     #    sellTrades=trades.short.tradeIDs
     #    buyTrades=trades.long.tradeIDs

@@ -255,7 +255,7 @@ def trainOpt(pair, layers_stacked_count,hidden,beta,spread,stoploss, history1,pr
     #hidden=6
     #layers_stacked_count=1
     predAverage=predIn
-    epochs=300
+    epochs=250
     predicted=100
     seqLength = 100
     starttraining=50
@@ -293,40 +293,40 @@ def trainOpt(pair, layers_stacked_count,hidden,beta,spread,stoploss, history1,pr
     #history.append(algo.getpast.getpast("US30_USD","H4"))
     #history.append(algo.getpast.getpast("USD_JPY","H4"))
     #history1=algo.getpast.getpast("EUR_GBP","H1")/
-    parser = argparse.ArgumentParser()
+#    parser = argparse.ArgumentParser()
+#    
+#    common.config.add_argument(parser)
+#    args = parser.parse_args()
+#    account_id = args.config.active_account
     
-    common.config.add_argument(parser)
-    args = parser.parse_args()
-    account_id = args.config.active_account
-    
-    api = args.config.create_context()
-    kwargs = {}
-    
-    
-    response = api.account.get(account_id)
-    ac=response.get("account", "200")
-    account1 = Account(ac)
-    #account1.dump()
-    accountBalance=account1.details.balance
-    tradeCount=account1.details.openTradeCount
-    trades=account1.position_get(pair)
-    #    sellTrades=trades.short.tradeIDs
-    #    buyTrades=trades.long.tradeIDs
-    
-    #if trades.short.units<0 or trades.long.units>0:
-    kwargs = {}
-    kwargs["instruments"]=pair
-    kwargs["since"]=None
-    kwargs["includeUnitsAvailable"]="FALSE"
-    kwargs["includeHomeConversions"]="TRUE"
-    
-    
-    #kwargs["granularity"] = "M15"
-    #kwargs["count"] = 1
-    response = api.pricing.get(account_id,**kwargs)
-    price=response.get("prices", 200)
-    bid=price[0].bids[0].price
-    ask=price[0].asks[0].price
+#    api = args.config.create_context()
+#    kwargs = {}
+#    
+#    
+#    response = api.account.get(account_id)
+#    ac=response.get("account", "200")
+#    account1 = Account(ac)
+#    #account1.dump()
+#    accountBalance=account1.details.balance
+#    tradeCount=account1.details.openTradeCount
+#    trades=account1.position_get(pair)
+#    #    sellTrades=trades.short.tradeIDs
+#    #    buyTrades=trades.long.tradeIDs
+#    
+#    #if trades.short.units<0 or trades.long.units>0:
+#    kwargs = {}
+#    kwargs["instruments"]=pair
+#    kwargs["since"]=None
+#    kwargs["includeUnitsAvailable"]="FALSE"
+#    kwargs["includeHomeConversions"]="TRUE"
+#    
+#    
+#    #kwargs["granularity"] = "M15"
+#    #kwargs["count"] = 1
+#    response = api.pricing.get(account_id,**kwargs)
+#    price=response.get("prices", 200)
+#    bid=price[0].bids[0].price
+#    ask=price[0].asks[0].price
     #spread=ask-bid
 #    spread=0.00015
     
@@ -513,7 +513,7 @@ def trainOpt(pair, layers_stacked_count,hidden,beta,spread,stoploss, history1,pr
     testtot=[]
     with tf.Session() as sess:
         init.run()
-    #    saver.restore(sess, "C:\\New folder\model.ckpt")
+#        saver.restore(sess, "C:\\New folder\model.ckpt")
         
         for ep in range(epochs):
     #    ep=0
@@ -521,7 +521,7 @@ def trainOpt(pair, layers_stacked_count,hidden,beta,spread,stoploss, history1,pr
     #        ep=ep+1
             loss12 =sess.run(training_op, feed_dict={X: x_batches, y: y_batches})
             mse = loss.eval(feed_dict={X: x_batches, y: y_batches})/num_periods
-            c.append(mse)
+#            c.append(mse)
     #        print("Step " + str(ep) + ", Minibatch Loss= " + \
     #                  "{:.4f}".format(loss) + ", Training Accuracy= " + \
     #                  "{:.3f}".format(acc))
@@ -531,7 +531,7 @@ def trainOpt(pair, layers_stacked_count,hidden,beta,spread,stoploss, history1,pr
     #            print(ep, "Train (MAE):",mse)
     #            print(ep, "Train (MAE):",acc)
     
-                save_path = saver.save(sess, "C:\\New folder\model.ckpt")
+#                save_path = saver.save(sess, "C:\\New folder\model.ckpt")
                 
                 training_y_pred=training_y_pred.reshape(1,-1,num_classes)
                 training_y_pred=np.squeeze(training_y_pred)

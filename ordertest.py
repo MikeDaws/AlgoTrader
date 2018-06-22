@@ -106,10 +106,12 @@ takeProfit=round(takeProfit,e)
 
 
 positionsize=((risk*accountBalance))/(potentialLoss*convert)
-maxpositionsize=((account1.details.marginAvailable/account1.details.marginRate)/convert)/(potentialLoss)  
+maxpositionsize=0.5*((account1.details.marginAvailable/account1.details.marginRate))/(convert*mid)
+   
           
 positionsize=np.minimum(positionsize,maxpositionsize)
-positionsize=int(positionsize)
+positionsize=int(positionsize)         
+
 kwargs = {}
 kwargs1 = {}
 kwargs1["price"] = stoploss
@@ -130,8 +132,8 @@ vol=[]
 historyCandles.append((getFullpast.getFullpast(pair,"M15",1)))
 vol=abs(historyCandles[0][:,1]-historyCandles[0][:,2])
 averageVol=np.mean(vol[-4:])
-if(averageVol>0.75*spread):
-    order=api.order.market(account_id,**kwargs)
+#if(averageVol>0.75*spread):
+#    order=api.order.market(account_id,**kwargs)
 #order=api.order.MarketOrder(order)
 #print("Response: {} ({})".format(order.status, order.reason))
 #print("")re

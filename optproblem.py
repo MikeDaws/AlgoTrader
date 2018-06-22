@@ -61,7 +61,7 @@ from skopt import gp_minimize, gbrt_minimize
 from notest import notest
 from getSpread import getSpread
 
-pair="EUR_JPY"
+pair="EUR_USD"
 Data=(getFullpast.getFullpast(pair,"M15",11))
 np.save("./save",Data)
 
@@ -73,10 +73,17 @@ np.save("./save",Data)
 #spread=0.00015
 #stoploss=x[4]
 
-space  = [Real(0.1, 0.5, name='Threshold'),
-          Real(0.5, 3, name='stoploss'),
-          Real(1.5, 4, name='profitmulti'),
-          Real(2, 4, name='trainmulti')]
+#space  = [Integer(1, 3, name='Layer'),
+#          Integer(6, 36, name='Hidden'),
+#          Real(0.0001, 0.01, name='Beta'),
+#          Real(0.1, 0.9, name='Threshold'),
+#          Real(0.5, 4, name='stoploss'),
+#          Real(1.5, 4, name='profitmulti'),
+#          Real(1, 4, name='trainmulti')]
+
+space  = [Real(0.05, 1, name='Threshold'),
+          Real(0.5, 5, name='stoploss'),
+          Real(1.5, 5, name='profitmulti')]
 #Data=np.load('./save.npy')
 #hidden=50
 #layers_stacked_count=3
@@ -88,4 +95,4 @@ space  = [Real(0.1, 0.5, name='Threshold'),
 
 use_named_args(space)
 
-res=gbrt_minimize(optFunc, space, n_calls=60, random_state=0,n_random_starts=10, verbose='True', n_jobs=1 )
+res=gbrt_minimize(optFunc, space, n_calls=5000, random_state=0,n_random_starts=10, verbose='True', n_jobs=1 )

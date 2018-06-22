@@ -81,11 +81,11 @@ t=0
 x = [2, #pred
      18, #nodes
      1, #stacks
-     0.013, #beta
-     0.15, #threshold
-     2.5,#training multiplier
-     2.7,     #stop multi
-     1.7] #profitmulti
+     0.005, #beta
+     0.12, #threshold
+     2,#training multiplier
+     0.5,     #stop multi
+     4] #profitmulti
      
 seqlength=100
 
@@ -146,7 +146,7 @@ while 1:
         dt = dt.replace(second=00,  microsecond=00)
         #        t=t+1
         while datetime.now() < dt:
-            orderChecker.orderChecker(pairs)
+#            orderChecker.orderChecker(pairs)
             time.sleep(1)
 
     else:

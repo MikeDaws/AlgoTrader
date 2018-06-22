@@ -61,9 +61,16 @@ def getFullpast(a,b,n):
     #    kwargs["toTime"] = datetime.now()    
         if ii>0:
             kwargs["toTime"] = storeCandles[ii-1][0].time
-        response = api.instrument.candles(a, **kwargs)
+        time.sleep(0.5)    
+        while True:
+            try:
+                response = api.instrument.candles(a, **kwargs)
         
-        candles = response.get("candles", 200)   
+                candles = response.get("candles", 200)
+                break
+            except:
+             time.sleep(2)
+#        time.sleep(0.5)
         storeCandles.append(candles)
     storeCandles=np.array(storeCandles)
     storeCandles=storeCandles.reshape(1,-1)

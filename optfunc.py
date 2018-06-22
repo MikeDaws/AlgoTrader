@@ -50,21 +50,25 @@ def optFunc(x):
 #threshold=0.35
 #spread=0.00015
 ##stoploss=0.0001    
-    pair="EUR_JPY"
+    pair="EUR_USD"
     layers_stacked_count=1
     hidden=18
-    beta=0.013
+    beta=0.005
+
+
+    spread=getSpread.getSpread(pair)
     threshold=x[0]
-    spread=0.017
     stoploss=x[1]
     predIn=2
     n=x[2]
-    m=x[3]
+    m=2
+
+    
 #    beta=x[2]
 #    threshold=x[3]
-#    spread=0.00015
+##    spread=0.00015
 #    stoploss=x[4]
-#    predIn=2
+##    predIn=2
 #    n=x[5]
 #    m=x[6]
 #    layers_stacked_count=x[0]
@@ -77,7 +81,7 @@ def optFunc(x):
 #    layers_stacked_count=3
 #    beta=0.0001    
 #
-    print(x[0], x[1], x[2], x[3])
+    print(x[0], x[1], x[2])
     Data=np.load('./save.npy')
     predictions, Data, testScore = trainOpt(pair, layers_stacked_count,hidden,beta,spread,stoploss, Data,predIn,m)
 #    predictions=notraining(Data,pair,1, hidden, layers_stacked_count, beta)

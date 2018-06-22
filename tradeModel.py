@@ -12,14 +12,14 @@ def tradeModel(predictions, Data, threshold, spread, stoploss,n):
     
         if predictions[-ii,0]>threshold and predictions[-ii,1]<predictions[-ii,0]:
             if Data[-ii+1,1]-Data[-ii,3]>n*spread and Data[-ii,3]-Data[-ii+1,2]<stoploss*spread :
-                profit=profit+(Data[-ii+1,1]-Data[-ii,3])-0.5*spread
+                profit=profit+(n/stoploss)
             else:
-                profit=profit-stoploss*spread
+                profit=profit-1
             
         elif predictions[-ii,1]>threshold and predictions[-ii,0]<predictions[-ii,1]:   
             if Data[-ii,3]-Data[-ii+1,2]>n*spread and Data[-ii+1,1]-Data[-ii,3]<stoploss*spread :
-                profit=profit+(Data[-ii,3]-Data[-ii+1,2])-0.5*spread
+                profit=profit+(n/stoploss)
             else:
-                profit=profit-stoploss*spread
+                profit=profit-1
                 
     return profit

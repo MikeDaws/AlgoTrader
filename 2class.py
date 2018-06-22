@@ -101,26 +101,21 @@ def inOnly(inputs, starttraining,endtraining, currencyPairs):
     for jj in range(0,(currencyPairs)):
         
         
-        temp.append(normout(inputPre[:,loopNum*jj+0]))       
-        temp.append(normout(inputPre[:,loopNum*jj+1])) 
-#        temp.append(normout(inputPre[:,loopNum*jj+0:loopNum*jj+4]))
-        temp.append(normout(inputPre[:,loopNum*jj+2]))
-        temp.append(timeout1(inputPre[:,loopNum*jj+3]))
-        temp.append(timeout2(inputPre[:,loopNum*jj+3]))
-        temp.append(hundred(inputPre[:,loopNum*jj+4]))
-        temp.append(hundred(inputPre[:,loopNum*jj+5]))
-        temp.append(hundred(inputPre[:,loopNum*jj+6]))
-        temp.append(normout(inputPre[:,loopNum*jj+7]))
-        temp.append(normout(inputPre[:,loopNum*jj+8]))
-        temp.append(normout(inputPre[:,loopNum*jj+9]))
-        temp.append(normout(inputPre[:,loopNum*jj+10]))
-#        temp.append(normout(inputPre[:,loopNum*jj+0:loopNum*jj+4]))
-#        temp.append(normout(inputPre[:,loopNum*jj+4]))
-#        temp.append(timeout(inputPre[:,loopNum*jj+5]))
-#        temp.append(normout(inputPre[:,loopNum*jj+6:loopNum*jj+8]))
+#        temp.append(normout(inputPre[:,loopNum*jj+0]))       
+#        temp.append(normout(inputPre[:,loopNum*jj+1])) 
+#        temp.append(normout(inputPre[:,loopNum*jj+2]))
+#        temp.append(timeout1(inputPre[:,loopNum*jj+3]))
+#        temp.append(timeout2(inputPre[:,loopNum*jj+3]))
+#        temp.append(hundred(inputPre[:,loopNum*jj+4]))
+#        temp.append(hundred(inputPre[:,loopNum*jj+5]))
+#        temp.append(hundred(inputPre[:,loopNum*jj+6]))
+#        temp.append(normout(inputPre[:,loopNum*jj+7]))
 #        temp.append(normout(inputPre[:,loopNum*jj+8]))
-#        temp.append(hundred(inputPre[:,loopNum*jj+10]))
-#        temp.append(hundred(inputPre[:,loopNum*jj+11]))
+#        temp.append(normout(inputPre[:,loopNum*jj+9]))
+#        temp.append(normout(inputPre[:,loopNum*jj+10]))
+#        temp.append(normout(inputPre[:,loopNum*jj+11]))
+        temp.append(normout(inputPre[:,loopNum*jj+12:loopNum*jj+16]))
+
 #        temp.append(hundred(inputPre[:,loopNum*jj+12]))
 #        temp.append(hundred(inputPre[:,loopNum*jj+13]))    
 #        temp.append(normout(inputPre[:,loopNum*jj+14:loopNum*jj+17]))
@@ -152,24 +147,23 @@ def inOut(inputs, starttraining,endtraining, currencyPairs,history1,spread):
     loopNum=int(len(inputPre[2])/currencyPairs)
     for jj in range(0,(currencyPairs)):
         
-        temp.append(normout(inputPre[:,loopNum*jj+0]))       
-        temp.append(normout(inputPre[:,loopNum*jj+1])) 
-#        temp.append(normout(inputPre[:,loopNum*jj+0:loopNum*jj+4]))
-        temp.append(normout(inputPre[:,loopNum*jj+2]))
-        temp.append(timeout1(inputPre[:,loopNum*jj+3]))
-        temp.append(timeout2(inputPre[:,loopNum*jj+3]))
-        temp.append(normout(inputPre[:,loopNum*jj+4]))
-        temp.append(hundred(inputPre[:,loopNum*jj+5]))
-        
-        temp.append(hundred(inputPre[:,loopNum*jj+6]))
-        temp.append(normout(inputPre[:,loopNum*jj+7]))
-        temp.append(normout(inputPre[:,loopNum*jj+8]))
-        temp.append(normout(inputPre[:,loopNum*jj+9]))
-        temp.append(normout(inputPre[:,loopNum*jj+10]))
-#        temp.append(normout(inputPre[:,loopNum*jj+6:loopNum*jj+8]))
+#        temp.append(normout(inputPre[:,loopNum*jj+0]))       
+#        temp.append(normout(inputPre[:,loopNum*jj+1])) 
+#        temp.append(normout(inputPre[:,loopNum*jj+2]))
+#        temp.append(timeout1(inputPre[:,loopNum*jj+3]))
+#        temp.append(timeout2(inputPre[:,loopNum*jj+3]))
+#        temp.append(normout(inputPre[:,loopNum*jj+4]))
+#        temp.append(hundred(inputPre[:,loopNum*jj+5]))
+#        
+#        temp.append(hundred(inputPre[:,loopNum*jj+6]))
+#        temp.append(normout(inputPre[:,loopNum*jj+7]))
 #        temp.append(normout(inputPre[:,loopNum*jj+8]))
-#        temp.append(hundred(inputPre[:,loopNum*jj+10]))
-#        temp.append(hundred(inputPre[:,loopNum*jj+11]))
+#        temp.append(normout(inputPre[:,loopNum*jj+9]))
+#        temp.append(normout(inputPre[:,loopNum*jj+10]))
+#
+#        temp.append(normout(inputPre[:,loopNum*jj+11]))
+        temp.append(normout(inputPre[:,loopNum*jj+12:loopNum*jj+16]))
+
 #        temp.append(hundred(inputPre[:,loopNum*jj+12]))
 #        temp.append(hundred(inputPre[:,loopNum*jj+13]))    
 #        temp.append(normout(inputPre[:,loopNum*jj+14:loopNum*jj+17]))
@@ -210,12 +204,12 @@ def inOut(inputs, starttraining,endtraining, currencyPairs,history1,spread):
             
             
     for ii in range(starttraining,endtraining):
-        if inputs[ii+1,4]-inputs[ii,4]>2*spread:
+        if inputs[ii+1,4]-inputs[ii,4]>spread:
             tempOut.append(1)
             tempOut.append(0)
             tempOut.append(0)
     
-        elif inputs[ii+1,4]-inputs[ii,4]<-2*spread:
+        elif inputs[ii+1,4]-inputs[ii,4]<-spread:
             tempOut.append(0)
             tempOut.append(1)
             tempOut.append(0)
@@ -250,25 +244,25 @@ def inOut(inputs, starttraining,endtraining, currencyPairs,history1,spread):
 
 
 
-learning_rate=0.025
-hidden=6
-layers_stacked_count=1
+learning_rate=0.01
+hidden=100
+layers_stacked_count=3
 predAverage=2
-epochs=200
+epochs=10000
 predicted=100
 seqLength = 100
 starttraining=50
 output=3
 num_classes=3
-beta=0.000 
+beta=0.000
 history1=[]
 inputs=[]
-dataAmount=50000
+dataAmount=100000
 history=[]
-pair="EUR_GBP"
+pair="EUR_USD"
 #history.append(algo.getpast.getpast("GBP_USD","M15"))
 #history.append(algo.getpast.getpast("AUD_JPY","H1"))
-history.append(getFullpast.getFullpast(pair,"M15",11))
+history.append(getFullpast.getFullpast(pair,"M15",20))
 #history.append(algo.getpast.getpast("AUD_JPY","H1"))
 #history.append(algo.getpast.getpast("AUD_USD","H1"))
 #history.append(algo.getpast.getpast("USD_JPY","H4"))
@@ -277,7 +271,7 @@ history.append(getFullpast.getFullpast(pair,"M15",11))
 ###past.getpast("USD_CHF","H4"))
 #history.append(algo.getpast.getpast("NZD_USD","H1"))
 #history.append(algo.getpast.getpast("EUR_CHF","H1"))
-#history.append(algo.getpast.getpast("GBP_JPY","H1"))
+#history.append(algo.getpast.getpast("GBP☺_JPY","H1"))
 #
 #history.append(algo.getpast.getpast("SGD_HKD","H4"))
 #history.append(algo.getpast.getpast("GBP_HKD","H4"))
@@ -323,7 +317,7 @@ response = api.pricing.get(account_id,**kwargs)
 price=response.get("prices", 200)
 bid=price[0].bids[0].price
 ask=price[0].asks[0].price
-#spread=ask-bid
+spread=ask-bid
 #    spread=0.00015
 
 targetHistory=[]
@@ -370,9 +364,11 @@ for kk in range(0,len(history)):
     inputs.append(history1[:,1]-history1[:,0])
     inputs.append(history1[:,2]-history1[:,3])
     inputs.append(history1[:,2]-history1[:,0])
-    
-    upperMovement=history1[1:339998,1]-history1[0:339997,3]
-    lowerMovement=history1[1:339998,1]-history1[0:339997,3]
+    inputs.append(talib.abstract.NATR(priceinputs))
+    for ii in range(0,len(history1[1])):
+        inputs.append((history1[:,ii]))    
+#    upperMovement=history1[1:339998,1]-history1[0:339997,3]
+#    lowerMovement=history1[1:339998,1]-history1[0:339997,3]
     
 #    inputs.append(talib.abstract.MINUS_DI(priceinputs))
 #    inputs.append(talib.abstract.PLUS_DI(priceinputs))

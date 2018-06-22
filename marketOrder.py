@@ -46,7 +46,7 @@ def placeOrder(pair, signal,stopmulti,profitmulti):
 #Check if trade is already open for pai
 #pair="EUR_GBP"
 #signal="sell"
-    risk=0.01
+    risk=0.005
     stopmulti=round(stopmulti,4)
     profitmulti=round(profitmulti,4)
     parser = argparse.ArgumentParser()
@@ -84,13 +84,13 @@ def placeOrder(pair, signal,stopmulti,profitmulti):
     mid=(ask+bid)/2
     if signal=="buy":
         stoploss=mid-(stopmulti+0.5)*spread
-        takeProfit=mid+(profitmulti-0.5)*spread
+        takeProfit=mid+(profitmulti)*spread
         potentialLoss=spread+(stopmulti)*spread
         sign=1
         convert=price[0].quoteHomeConversionFactors.positiveUnits
     elif signal=="sell":
         stoploss=mid+(stopmulti-0.5)*spread
-        takeProfit=mid-(profitmulti+0.5)*spread
+        takeProfit=mid-(profitmulti)*spread
         potentialLoss=spread+stopmulti*spread
         sign=-1
         convert=price[0].quoteHomeConversionFactors.negativeUnits
@@ -106,8 +106,8 @@ def placeOrder(pair, signal,stopmulti,profitmulti):
     
     
     positionsize=((risk*accountBalance))/(potentialLoss*convert)
-    maxpositionsize=((account1.details.marginAvailable/account1.details.marginRate)/convert)/(potentialLoss)  
-              
+    maxpositionsize=0.5*((account1.details.marginAvailable/account1.details.marginRate))/(convert*mid)
+                  
     positionsize=np.minimum(positionsize,maxpositionsize)
     positionsize=int(positionsize)
     kwargs = {}

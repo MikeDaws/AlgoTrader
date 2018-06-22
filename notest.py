@@ -389,5 +389,5 @@ def notest(pairIn,predIn,A,spread, hidden, layers_stacked_count, beta,stoploss,m
                 correct_pred = np.equal(np.argmax(training_y_pred, 1), np.argmax(normOut, 1))         
                 tot=np.sum(correct_pred)
                 print(ep, "Train (MAE):",tot/len(correct_pred))
-
+        sess.close()
     return targetHistory

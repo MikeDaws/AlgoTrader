@@ -36,6 +36,8 @@ import argparse
 from account.account import Account
 from order.args import OrderArguments
 import getFullpast
+import decimal
+
 #import datetime
 #while 1:
 
@@ -68,7 +70,7 @@ def orderChecker(pairs):
         openPrice=trades[ii].price
         a=ii
         kwargs = {}
-        kwargs["instruments"]=pair #insert command here from trade
+        kwargs["instruments"]=trades[ii].instrument #insert command here from trade
         kwargs["since"]=None
         kwargs["includeUnitsAvailable"]="FALSE"
         kwargs["includeHomeConversions"]="TRUE"
@@ -78,30 +80,33 @@ def orderChecker(pairs):
         bid=price[0].bids[0].price
         ask=price[0].asks[0].price
         spread=ask-bid
-        
+        triallingstop=0
+        Mod=0
+        currentSL=trades[ii].stopLossOrder.price
         if trades[ii].currentUnits< 0: #i.e. shorting
-            if ask<openPrice-1.5*spread:
-                triallingstop=spread*0.4
-                takeProfit=0
+            if ask<openPrice-1.7*spread:
+                triallingstop=np.minimum(ask+(spread*0.4),currentSL)
+                Mod=1
         if trades[ii].currentUnits>0: #i.e. shorting
-            if bid>openPrice+1.5*spread:
-                triallingstop=spread*0.4
-                takeProfit=0
+            if bid>openPrice+1.7*spread:
+                triallingstop=np.maximum(bid-(spread*0.4),currentSL)
+                Mod=1
         kwargs={}
         kwargs1={}
-        triallingstop=round(triallingstop,6)
-        if triallingstop>0:
+        e = abs(decimal.Decimal(str(bid)).as_tuple().exponent)
+        triallingstop=round(triallingstop,e)
+        if Mod>0:
         #    triallingstop=0.0001
         #    kwargs["id"] = trades[ii].id
         #    kwargs["id"] = trades[ii].id
         #    kwargs["instrument"]="GBP_USD"
         #    kwargs["stopLossOnFill"]=v20.transaction.StopLossDetails(**kwargs1)
-        #    kwargs1["price"] = 0
-        #    kwargs["takeProfitOnFill"]=v20.transaction.TakeProfitDetails(**kwargs1)
-            kwargs["takeProfit"]=None
-            kwargs["stopLoss"]=None
-            kwargs1["distance"] = triallingstop
-            kwargs["trailingStopLoss"]=v20.transaction.TrailingStopLossDetails(**kwargs1)   
+#            kwargs1["price"] = 0
+#            kwargs["takeProfitOnFill"]=v20.transaction.TakeProfitDetails(**kwargs1)
+            kwargs1["price"] = triallingstop
+    #    kwargs["takeProfitOnFill"]=v20.transaction.TakeProfitDetails(**kwargs1)
+#        kwargs["takeProfit"]=None
+            kwargs["stopLoss"]=v20.transaction.StopLossDetails(**kwargs1)
             api.trade.set_dependent_orders(account_id,trades[ii].id,**kwargs)#    order=api.trade.Trade(**kwargs)
             
     return
